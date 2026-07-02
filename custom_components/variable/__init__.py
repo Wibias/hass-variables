@@ -22,7 +22,6 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.device import (
     async_remove_stale_devices_links_keep_current_device,
 )
-import homeassistant.helpers.entity_registry as er
 from homeassistant.helpers.reload import async_integration_yaml_config
 from homeassistant.helpers.typing import ConfigType
 import voluptuous as vol
@@ -310,24 +309,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     elif platform == CONF_DEVICE:
         unload_ok = await remove_device(hass, entry)
     if unload_ok:
-        # Remove stored hass data
         hass.data[DOMAIN].pop(entry.entry_id)
-        # Also remove any entity registry entries tied to this config entry to
-        # avoid leaving orphaned entities without unique_id in the Entities list.
-        try:
-            registry = er.async_get(hass)
-            entries = er.async_entries_for_config_entry(registry, entry.entry_id)
-            for entity_entry in list(entries):
-                _LOGGER.debug(
-                    f"Removing entity registry entry for unloaded config: {entity_entry.entity_id}"
-                )
-                try:
-                    registry.async_remove(entity_entry.entity_id)
-                except Exception:
-                    _LOGGER.exception(
-                        f"Failed to remove entity registry entry: {entity_entry.entity_id}"
-                    )
-        except Exception:
-            _LOGGER.exception("Error cleaning up entity registry on unload")
 
     return unload_ok
