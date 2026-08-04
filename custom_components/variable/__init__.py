@@ -315,7 +315,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN][entry.entry_id] = hass_data
     platform = hass_data.get(CONF_ENTITY_PLATFORM)
     if platform in PLATFORMS:
-        await async_remove_helper_devices(
+        async_remove_helper_devices(
             hass,
             helper_config_entry_id=entry.entry_id,
             source_device_id=entry.data.get(CONF_DEVICE_ID),
