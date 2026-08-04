@@ -20,7 +20,6 @@ from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 import homeassistant.helpers.entity_registry as er
-from homeassistant.helpers.helper_integration import async_remove_helper_devices
 from homeassistant.helpers.reload import async_integration_yaml_config
 from homeassistant.helpers.typing import ConfigType
 import voluptuous as vol
@@ -46,6 +45,35 @@ from .const import (
     SERVICE_UPDATE_SENSOR,
 )
 from .device import create_device, remove_device
+
+try:
+    from homeassistant.helpers.helper_integration import async_remove_helper_devices
+except ImportError:
+    from homeassistant.helpers.device import (
+        async_remove_stale_devices_links_keep_current_device,
+    )
+
+    def async_remove_helper_devices(
+        hass: HomeAssistant,
+        *,
+        helper_config_entry_id: str,
+        source_device_id: str | None,
+        remove_all_devices: bool = False,
+    ) -> None:
+        """Remove stale helper device links on Home Assistant releases before 2026.8.
+
+        Args:
+            hass: Home Assistant instance hosting the helper integration.
+            helper_config_entry_id: Config entry identifier for the helper.
+            source_device_id: Device identifier that should remain linked.
+            remove_all_devices: Ignored on legacy Home Assistant releases.
+        """
+        async_remove_stale_devices_links_keep_current_device(
+            hass,
+            helper_config_entry_id,
+            source_device_id,
+        )
+
 
 _LOGGER = logging.getLogger(__name__)
 
