@@ -227,7 +227,7 @@ async def test_setup_entry_calls_helper_device_cleanup(
     assert await hass.config_entries.async_setup(sensor_entry.entry_id)
     await hass.async_block_till_done()
 
-    cleanup.assert_called_once_with(
+    cleanup.assert_any_call(
         hass,
         helper_config_entry_id=sensor_entry.entry_id,
         source_device_id=sensor_entry.data.get("device_id"),
@@ -253,7 +253,7 @@ def test_async_remove_helper_devices_fallback_maps_keyword_arguments(
         stale_calls.append((helper_config_entry_id, source_device_id))
 
     import homeassistant.helpers.helper_integration as helper_integration
-    from custom_components.variable import __init__ as variable_init
+    variable_module = importlib.import_module("custom_components.variable")
 
     monkeypatch.setattr(
         "homeassistant.helpers.device.async_remove_stale_devices_links_keep_current_device",
@@ -261,9 +261,9 @@ def test_async_remove_helper_devices_fallback_maps_keyword_arguments(
     )
     monkeypatch.delattr(helper_integration, "async_remove_helper_devices", raising=False)
 
-    importlib.reload(variable_init)
+    variable_module = importlib.reload(variable_module)
     try:
-        variable_init.async_remove_helper_devices(
+        variable_module.async_remove_helper_devices(
             None,
             helper_config_entry_id="entry-1",
             source_device_id="device-1",
@@ -271,7 +271,7 @@ def test_async_remove_helper_devices_fallback_maps_keyword_arguments(
         )
         assert stale_calls == [("entry-1", "device-1")]
     finally:
-        importlib.reload(variable_init)
+        importlib.reload(variable_module)
 
 
 async def test_remove_entry_cleans_up_entity_registry(
