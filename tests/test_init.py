@@ -218,7 +218,7 @@ async def test_setup_entry_calls_helper_device_cleanup(
         sensor_entry: Sensor config entry to set up.
         monkeypatch: Pytest fixture used to stub helper cleanup.
     """
-    cleanup = AsyncMock()
+    cleanup = AsyncMock(return_value=None)
     monkeypatch.setattr(
         "custom_components.variable.async_remove_helper_devices",
         cleanup,
