@@ -2,7 +2,7 @@
 
 import importlib
 from typing import Any
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
