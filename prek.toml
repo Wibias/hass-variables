@@ -67,7 +67,7 @@ additional_dependencies = [
   "pytest>=9",
   "pytest-asyncio",
   "pytest-cov",
-  "pytest-homeassistant-custom-component",
+  "pytest-homeassistant>=2026.11.0",
   "pytest-timeout",
   "types-PyYAML",
 ]

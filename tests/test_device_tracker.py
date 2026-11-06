@@ -20,7 +20,7 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import device_registry as dr
 import pytest
-from pytest_homeassistant_custom_component.common import mock_restore_cache
+from pytest_homeassistant.common import mock_restore_cache
 
 from custom_components.variable.const import (
     ATTR_ATTRIBUTES,

@@ -28,10 +28,18 @@ pytest = [
     "pytest>=9",
     "pytest-asyncio",
     "pytest-cov",
-    "pytest-homeassistant-custom-component",
+    "pytest-homeassistant>=2026.11.0",
     "pytest-timeout",
 ]
 dev = [{ include-group = "lint" }, { include-group = "pytest" }]
+
+[tool.uv]
+# Home Assistant scans custom_components paths; use real paths for editable installs.
+config-settings = { editable_mode = "compat" }
+
+[tool.uv.dependency-groups]
+pytest = { requires-python = ">=3.14.2" }
+dev = { requires-python = ">=3.14.2" }
 
 [tool.mypy]
 python_version = "3.14"
@@ -47,7 +55,7 @@ warn_unused_ignores = true
 warn_unused_configs = true
 
 [[tool.mypy.overrides]]
-module = ["pytest_homeassistant_custom_component.*"]
+module = ["pytest_homeassistant.*"]
 ignore_missing_imports = true
 
 [tool.ruff]
@@ -150,7 +158,9 @@ convention = "google"
 ignore-words-list = "hass,ist,THIRDPARTY"
 
 [tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "function"
 addopts = """
+  -p no:respx
   --quiet
   --strict
   --timeout=20

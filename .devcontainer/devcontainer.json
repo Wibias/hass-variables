@@ -3,7 +3,7 @@
 	"context": "..",
 	"image": "ghcr.io/ludeeus/devcontainer/integration:latest",
 	"appPort": "9123:8123",
-	"postCreateCommand": "container install && pip install --upgrade pip && pip install --ignore-installed --group dev -e .",
+	"postCreateCommand": "container install && pip install --upgrade pip && pip install --ignore-installed --group dev -e . --config-settings editable_mode=compat",
 	"extensions": [
 		"ms-python.python",
 		"github.vscode-pull-request-github",
