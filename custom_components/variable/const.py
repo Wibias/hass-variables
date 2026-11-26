@@ -34,6 +34,15 @@ CONF_EXCLUDE_FROM_RECORDER = "exclude_from_recorder"
 CONF_UPDATED = "config_updated"
 CONF_CLEAR_DEVICE_ID = "clear_device_id"
 
+# Persisted device metadata keys shared by the flows and device registry helpers.
+CONF_CONFIGURATION_URL = "configuration_url"
+CONF_HW_VERSION = "hw_version"
+CONF_MANUFACTURER = "manufacturer"
+CONF_MODEL = "model"
+CONF_MODEL_ID = "model_id"
+CONF_SERIAL_NUMBER = "serial_number"
+CONF_SW_VERSION = "sw_version"
+
 ATTR_ATTRIBUTES = "attributes"
 ATTR_DELETE_IN_ZONES = "delete_in_zones"
 ATTR_DELETE_LOCATION_NAME = "delete_location_name"

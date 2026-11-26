@@ -5,16 +5,9 @@ from unittest.mock import Mock
 from homeassistant.components.device_tracker.const import ATTR_LOCATION_NAME
 from homeassistant.const import (
     ATTR_BATTERY_LEVEL,
-    ATTR_CONFIGURATION_URL,
     ATTR_GPS_ACCURACY,
-    ATTR_HW_VERSION,
     ATTR_LATITUDE,
     ATTR_LONGITUDE,
-    ATTR_MANUFACTURER,
-    ATTR_MODEL,
-    ATTR_MODEL_ID,
-    ATTR_SERIAL_NUMBER,
-    ATTR_SW_VERSION,
     CONF_DEVICE,
     CONF_DEVICE_CLASS,
     CONF_DEVICE_ID,
@@ -137,26 +130,26 @@ async def test_update_device_changes_all_registry_metadata(
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
     metadata = {
-        ATTR_MANUFACTURER: "Variables Inc.",
-        ATTR_MODEL: "Virtual Hub",
-        ATTR_MODEL_ID: "VH-2",
-        ATTR_SW_VERSION: "2.0",
-        ATTR_HW_VERSION: "B",
-        ATTR_SERIAL_NUMBER: "SERIAL-2",
-        ATTR_CONFIGURATION_URL: "https://example.com/metadata",
+        "manufacturer": "Variables Inc.",
+        "model": "Virtual Hub",
+        "model_id": "VH-2",
+        "sw_version": "2.0",
+        "hw_version": "B",
+        "serial_number": "SERIAL-2",
+        "configuration_url": "https://example.com/metadata",
     }
 
     assert await update_device(hass, entry, metadata)
 
     device = _get_device_for_entry(dr.async_get(hass), entry)
     assert device is not None
-    assert device.manufacturer == metadata[ATTR_MANUFACTURER]
-    assert device.model == metadata[ATTR_MODEL]
-    assert device.model_id == metadata[ATTR_MODEL_ID]
-    assert device.sw_version == metadata[ATTR_SW_VERSION]
-    assert device.hw_version == metadata[ATTR_HW_VERSION]
-    assert device.serial_number == metadata[ATTR_SERIAL_NUMBER]
-    assert str(device.configuration_url) == metadata[ATTR_CONFIGURATION_URL]
+    assert device.manufacturer == metadata["manufacturer"]
+    assert device.model == metadata["model"]
+    assert device.model_id == metadata["model_id"]
+    assert device.sw_version == metadata["sw_version"]
+    assert device.hw_version == metadata["hw_version"]
+    assert device.serial_number == metadata["serial_number"]
+    assert str(device.configuration_url) == metadata["configuration_url"]
 
 
 async def test_update_device_returns_false_when_registry_device_is_missing(
@@ -177,7 +170,7 @@ async def test_update_device_returns_false_when_registry_device_is_missing(
         }
     )
 
-    assert not await update_device(hass, entry, {ATTR_MODEL: "Unapplied"})
+    assert not await update_device(hass, entry, {"model": "Unapplied"})
 
 
 def test_get_device_for_entry_uses_legacy_lookup_before_home_assistant_2026_8(
@@ -306,8 +299,8 @@ async def test_setup_device_entry_creates_registry_device(
             CONF_ENTITY_PLATFORM: CONF_DEVICE,
             CONF_NAME: "Virtual Hub",
             CONF_YAML_VARIABLE: False,
-            ATTR_MANUFACTURER: "Variables",
-            ATTR_CONFIGURATION_URL: "https://example.com/device",
+            "manufacturer": "Variables",
+            "configuration_url": "https://example.com/device",
         }
     )
 
@@ -343,7 +336,7 @@ async def test_clearing_variable_device_links_preserves_entities_when_device_rem
         flow_result["flow_id"],
         user_input={
             CONF_NAME: "Lifecycle Device",
-            ATTR_MANUFACTURER: "Variables",
+            "manufacturer": "Variables",
         },
     )
 

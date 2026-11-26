@@ -12,12 +12,9 @@ from homeassistant.components.sensor.const import CONF_STATE_CLASS
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     ATTR_BATTERY_LEVEL,
-    ATTR_CONFIGURATION_URL,
     ATTR_GPS_ACCURACY,
     ATTR_LATITUDE,
     ATTR_LONGITUDE,
-    ATTR_MANUFACTURER,
-    ATTR_MODEL,
     CONF_DEVICE,
     CONF_DEVICE_CLASS,
     CONF_ICON,
@@ -491,8 +488,8 @@ async def test_temperature_flow_rejects_invalid_typed_selection(
             "add_device",
             {
                 CONF_NAME: "Virtual Hub",
-                ATTR_MANUFACTURER: "Variables",
-                ATTR_CONFIGURATION_URL: "https://example.com/device",
+                "manufacturer": "Variables",
+                "configuration_url": "https://example.com/device",
             },
             CONF_DEVICE,
             None,
@@ -566,7 +563,7 @@ async def test_device_flow_rejects_invalid_configuration_url(hass: HomeAssistant
         result["flow_id"],
         user_input={
             CONF_NAME: "Invalid Device",
-            ATTR_CONFIGURATION_URL: "not a URL",
+            "configuration_url": "not a URL",
         },
     )
 
@@ -1445,40 +1442,58 @@ async def test_device_options_flow_updates_registry_metadata(
         hass (HomeAssistant): Home Assistant instance that hosts the integration.
         config_entry_factory (ConfigEntryFactory): Factory that creates the device config entry.
     """
+    original_metadata = {
+        "configuration_url": "https://example.com/original",
+        "hw_version": "1",
+        "manufacturer": "Original",
+        "model": "Original Model",
+        "model_id": "original-model",
+        "serial_number": "original-serial",
+        "sw_version": "1.0",
+    }
+    updated_metadata = {
+        "configuration_url": "https://example.com/updated",
+        "hw_version": "2",
+        "manufacturer": "Updated",
+        "model": "Updated Model",
+        "model_id": "updated-model",
+        "serial_number": "updated-serial",
+        "sw_version": "2.0",
+    }
     entry = config_entry_factory(
         {
             CONF_ENTITY_PLATFORM: CONF_DEVICE,
             CONF_NAME: "Options Hub",
             CONF_YAML_VARIABLE: False,
-            ATTR_MANUFACTURER: "Original",
-            ATTR_MODEL: "Original Model",
-            ATTR_CONFIGURATION_URL: "https://example.com/original",
+            **original_metadata,
         }
     )
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
+    registry = dr.async_get(hass)
+    original_device = _get_device_for_entry(registry, entry)
+    assert original_device is not None
+    assert {
+        key: str(getattr(original_device, key)) for key in original_metadata
+    } == original_metadata
 
     result = await hass.config_entries.options.async_init(entry.entry_id)
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "device_options"
+    schema = result["data_schema"]
+    assert schema is not None
+    assert schema({}) == original_metadata
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            ATTR_MANUFACTURER: "Updated",
-            ATTR_MODEL: "Updated Model",
-            ATTR_CONFIGURATION_URL: "https://example.com/updated",
-        },
+        result["flow_id"], user_input=dict(updated_metadata)
     )
     await hass.async_block_till_done()
 
     assert result["type"] is FlowResultType.CREATE_ENTRY
-    assert entry.data[ATTR_MANUFACTURER] == "Updated"
-    assert entry.data[ATTR_MODEL] == "Updated Model"
-    device = _get_device_for_entry(dr.async_get(hass), entry)
+    assert {key: entry.data[key] for key in updated_metadata} == updated_metadata
+    device = _get_device_for_entry(registry, entry)
     assert device is not None
-    assert device.manufacturer == "Updated"
-    assert device.model == "Updated Model"
-    assert str(device.configuration_url) == "https://example.com/updated"
+    assert device.id == original_device.id
+    assert {key: str(getattr(device, key)) for key in updated_metadata} == updated_metadata
 
 
 async def test_device_options_invalid_url_preserves_entry_and_registry(
@@ -1496,9 +1511,9 @@ async def test_device_options_invalid_url_preserves_entry_and_registry(
             CONF_ENTITY_PLATFORM: CONF_DEVICE,
             CONF_NAME: "Preserved Hub",
             CONF_YAML_VARIABLE: False,
-            ATTR_MANUFACTURER: "Original",
-            ATTR_MODEL: "Original Model",
-            ATTR_CONFIGURATION_URL: "https://example.com/original",
+            "manufacturer": "Original",
+            "model": "Original Model",
+            "configuration_url": "https://example.com/original",
         }
     )
     assert await hass.config_entries.async_setup(entry.entry_id)
@@ -1513,9 +1528,9 @@ async def test_device_options_invalid_url_preserves_entry_and_registry(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
-            ATTR_MANUFACTURER: "Should Not Persist",
-            ATTR_MODEL: "Should Not Persist",
-            ATTR_CONFIGURATION_URL: "not a URL",
+            "manufacturer": "Should Not Persist",
+            "model": "Should Not Persist",
+            "configuration_url": "not a URL",
         },
     )
     await hass.async_block_till_done()
