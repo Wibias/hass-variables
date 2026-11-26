@@ -119,12 +119,13 @@ async def async_setup_entry(
     """
     platform = entity_platform.async_get_current_platform()
 
+    # HA aliases Voluptuous to Probatio at runtime, which mypy cannot see.
     platform.async_register_entity_service(
         SERVICE_UPDATE_VARIABLE,
         {
-            vol.Optional(ATTR_VALUE): cv.match_all,
-            vol.Optional(ATTR_ATTRIBUTES): dict,
-            vol.Optional(ATTR_REPLACE_ATTRIBUTES, default=DEFAULT_REPLACE_ATTRIBUTES): cv.boolean,
+            vol.Optional(ATTR_VALUE): cv.match_all,  # type: ignore[dict-item, unused-ignore]
+            vol.Optional(ATTR_ATTRIBUTES): dict,  # type: ignore[dict-item, unused-ignore]
+            vol.Optional(ATTR_REPLACE_ATTRIBUTES, default=DEFAULT_REPLACE_ATTRIBUTES): cv.boolean,  # type: ignore[dict-item, unused-ignore]
         },
         "async_update_variable",
     )
@@ -132,7 +133,7 @@ async def async_setup_entry(
     platform.async_register_entity_service(
         SERVICE_INCREMENT_SENSOR,
         {
-            vol.Optional(ATTR_VALUE_DELTA, default=1): vol.Any(int, float),
+            vol.Optional(ATTR_VALUE_DELTA, default=1): vol.Any(int, float),  # type: ignore[dict-item, unused-ignore]
         },
         "async_increment_variable",
     )
@@ -140,7 +141,7 @@ async def async_setup_entry(
     platform.async_register_entity_service(
         SERVICE_DECREMENT_SENSOR,
         {
-            vol.Optional(ATTR_VALUE_DELTA, default=1): vol.Any(int, float),
+            vol.Optional(ATTR_VALUE_DELTA, default=1): vol.Any(int, float),  # type: ignore[dict-item, unused-ignore]
         },
         "async_decrement_variable",
     )

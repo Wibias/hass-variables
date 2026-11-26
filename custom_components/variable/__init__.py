@@ -212,14 +212,15 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         DOMAIN,
         SERVICE_SET_VARIABLE_LEGACY,
         async_set_variable_legacy_service,
-        schema=SERVICE_SET_VARIABLE_LEGACY_SCHEMA,
+        # HA aliases Voluptuous to Probatio at runtime, which mypy cannot see.
+        schema=SERVICE_SET_VARIABLE_LEGACY_SCHEMA,  # type: ignore[arg-type, unused-ignore]
     )
 
     hass.services.async_register(
         DOMAIN,
         SERVICE_SET_ENTITY_LEGACY,
         async_set_entity_legacy_service,
-        schema=SERVICE_SET_ENTITY_LEGACY_SCHEMA,
+        schema=SERVICE_SET_ENTITY_LEGACY_SCHEMA,  # type: ignore[arg-type, unused-ignore]
     )
     hass.services.async_register(DOMAIN, SERVICE_RELOAD, _async_reload_service_handler)
 

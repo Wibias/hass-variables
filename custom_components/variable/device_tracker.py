@@ -88,19 +88,20 @@ async def async_setup_entry(
     """
     platform = entity_platform.async_get_current_platform()
 
+    # HA aliases Voluptuous to Probatio at runtime, which mypy cannot see.
     platform.async_register_entity_service(
         SERVICE_UPDATE_VARIABLE,
         {
-            vol.Optional(ATTR_LATITUDE): cv.latitude,
-            vol.Optional(ATTR_LONGITUDE): cv.longitude,
-            vol.Optional(ATTR_IN_ZONES): vol.All(cv.ensure_list, [cv.string]),
-            vol.Optional(ATTR_DELETE_IN_ZONES): cv.boolean,
-            vol.Optional(ATTR_LOCATION_NAME): cv.string,
-            vol.Optional(ATTR_DELETE_LOCATION_NAME): cv.boolean,
-            vol.Optional(ATTR_GPS_ACCURACY): cv.positive_int,
-            vol.Optional(ATTR_BATTERY_LEVEL): vol.All(vol.Coerce(int), vol.Range(min=0, max=100)),
-            vol.Optional(ATTR_ATTRIBUTES): dict,
-            vol.Optional(ATTR_REPLACE_ATTRIBUTES, default=DEFAULT_REPLACE_ATTRIBUTES): cv.boolean,
+            vol.Optional(ATTR_LATITUDE): cv.latitude,  # type: ignore[dict-item, unused-ignore]
+            vol.Optional(ATTR_LONGITUDE): cv.longitude,  # type: ignore[dict-item, unused-ignore]
+            vol.Optional(ATTR_IN_ZONES): vol.All(cv.ensure_list, [cv.string]),  # type: ignore[dict-item, unused-ignore]
+            vol.Optional(ATTR_DELETE_IN_ZONES): cv.boolean,  # type: ignore[dict-item, unused-ignore]
+            vol.Optional(ATTR_LOCATION_NAME): cv.string,  # type: ignore[dict-item, unused-ignore]
+            vol.Optional(ATTR_DELETE_LOCATION_NAME): cv.boolean,  # type: ignore[dict-item, unused-ignore]
+            vol.Optional(ATTR_GPS_ACCURACY): cv.positive_int,  # type: ignore[dict-item, unused-ignore]
+            vol.Optional(ATTR_BATTERY_LEVEL): vol.All(vol.Coerce(int), vol.Range(min=0, max=100)),  # type: ignore[dict-item, unused-ignore]
+            vol.Optional(ATTR_ATTRIBUTES): dict,  # type: ignore[dict-item, unused-ignore]
+            vol.Optional(ATTR_REPLACE_ATTRIBUTES, default=DEFAULT_REPLACE_ATTRIBUTES): cv.boolean,  # type: ignore[dict-item, unused-ignore]
         },
         "async_update_variable",
     )

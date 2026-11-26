@@ -81,10 +81,11 @@ async def async_setup_entry(
     """
     platform = entity_platform.async_get_current_platform()
 
+    # HA aliases Voluptuous to Probatio at runtime, which mypy cannot see.
     platform.async_register_entity_service(
         SERVICE_UPDATE_VARIABLE,
         {
-            vol.Optional(CONF_VALUE): selector.SelectSelector(
+            vol.Optional(CONF_VALUE): selector.SelectSelector(  # type: ignore[dict-item, unused-ignore]
                 selector.SelectSelectorConfig(
                     options=["None", "true", "false"],
                     translation_key="boolean_options",
@@ -93,8 +94,8 @@ async def async_setup_entry(
                     mode=selector.SelectSelectorMode.LIST,
                 )
             ),
-            vol.Optional(ATTR_ATTRIBUTES): dict,
-            vol.Optional(ATTR_REPLACE_ATTRIBUTES, default=DEFAULT_REPLACE_ATTRIBUTES): cv.boolean,
+            vol.Optional(ATTR_ATTRIBUTES): dict,  # type: ignore[dict-item, unused-ignore]
+            vol.Optional(ATTR_REPLACE_ATTRIBUTES, default=DEFAULT_REPLACE_ATTRIBUTES): cv.boolean,  # type: ignore[dict-item, unused-ignore]
         },
         "async_update_variable",
     )
@@ -102,8 +103,8 @@ async def async_setup_entry(
     platform.async_register_entity_service(
         SERVICE_TOGGLE_VARIABLE,
         {
-            vol.Optional(ATTR_ATTRIBUTES): dict,
-            vol.Optional(ATTR_REPLACE_ATTRIBUTES, default=DEFAULT_REPLACE_ATTRIBUTES): cv.boolean,
+            vol.Optional(ATTR_ATTRIBUTES): dict,  # type: ignore[dict-item, unused-ignore]
+            vol.Optional(ATTR_REPLACE_ATTRIBUTES, default=DEFAULT_REPLACE_ATTRIBUTES): cv.boolean,  # type: ignore[dict-item, unused-ignore]
         },
         "async_toggle_variable",
     )
