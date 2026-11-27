@@ -13,16 +13,9 @@ from homeassistant.components.sensor.const import DEVICE_CLASS_UNITS
 from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult, OptionsFlow
 from homeassistant.const import (
     ATTR_BATTERY_LEVEL,
-    ATTR_CONFIGURATION_URL,
     ATTR_GPS_ACCURACY,
-    ATTR_HW_VERSION,
     ATTR_LATITUDE,
     ATTR_LONGITUDE,
-    ATTR_MANUFACTURER,
-    ATTR_MODEL,
-    ATTR_MODEL_ID,
-    ATTR_SERIAL_NUMBER,
-    ATTR_SW_VERSION,
     CONF_DEVICE,
     CONF_DEVICE_CLASS,
     CONF_DEVICE_ID,
@@ -49,10 +42,17 @@ from .const import (
     ATTR_VALUE,
     CONF_ATTRIBUTES,
     CONF_CLEAR_DEVICE_ID,
+    CONF_CONFIGURATION_URL,
     CONF_ENTITY_PLATFORM,
     CONF_EXCLUDE_FROM_RECORDER,
     CONF_FORCE_UPDATE,
+    CONF_HW_VERSION,
+    CONF_MANUFACTURER,
+    CONF_MODEL,
+    CONF_MODEL_ID,
     CONF_RESTORE,
+    CONF_SERIAL_NUMBER,
+    CONF_SW_VERSION,
     CONF_TZOFFSET,
     CONF_UPDATED,
     CONF_VALUE,
@@ -288,13 +288,13 @@ ADD_DEVICE_TRACKER_SCHEMA = vol.Schema(
 ADD_DEVICE_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_NAME): cv.string,
-        vol.Optional(ATTR_CONFIGURATION_URL): cv.string,
-        vol.Optional(ATTR_MANUFACTURER): cv.string,
-        vol.Optional(ATTR_HW_VERSION): cv.string,
-        vol.Optional(ATTR_MODEL): cv.string,
-        vol.Optional(ATTR_MODEL_ID): cv.string,
-        vol.Optional(ATTR_SERIAL_NUMBER): cv.string,
-        vol.Optional(ATTR_SW_VERSION): cv.string,
+        vol.Optional(CONF_CONFIGURATION_URL): cv.string,
+        vol.Optional(CONF_MANUFACTURER): cv.string,
+        vol.Optional(CONF_HW_VERSION): cv.string,
+        vol.Optional(CONF_MODEL): cv.string,
+        vol.Optional(CONF_MODEL_ID): cv.string,
+        vol.Optional(CONF_SERIAL_NUMBER): cv.string,
+        vol.Optional(CONF_SW_VERSION): cv.string,
     }
 )
 
@@ -689,8 +689,8 @@ class VariableConfigFlow(ConfigFlow, domain=DOMAIN):
 
                 # Cannot use cv.url validation in the schema itself so apply
                 # extra validation here
-                if user_input.get(ATTR_CONFIGURATION_URL, None):
-                    cv.url(user_input.get(ATTR_CONFIGURATION_URL))
+                if user_input.get(CONF_CONFIGURATION_URL, None):
+                    cv.url(user_input.get(CONF_CONFIGURATION_URL))
                 info = await validate_sensor_input(self.hass, user_input)
                 _LOGGER.debug("[New Device] updated user_input: %s", user_input)
                 return self.async_create_entry(title=info.get("title", ""), data=user_input)
@@ -2105,8 +2105,8 @@ class VariableOptionsFlowHandler(OptionsFlow):
             try:
                 # Cannot use cv.url validation in the schema itself so apply
                 # extra validation here
-                if user_input.get(ATTR_CONFIGURATION_URL, None):
-                    cv.url(user_input.get(ATTR_CONFIGURATION_URL))
+                if user_input.get(CONF_CONFIGURATION_URL, None):
+                    cv.url(user_input.get(CONF_CONFIGURATION_URL))
                 for m in dict(self.config_entry.data):
                     user_input.setdefault(m, self.config_entry.data[m])
                 _LOGGER.debug("[Device Options] updated user_input: %s", user_input)
@@ -2124,13 +2124,13 @@ class VariableOptionsFlowHandler(OptionsFlow):
         device_options_schema = vol.Schema({})
 
         options = [
-            ATTR_CONFIGURATION_URL,
-            ATTR_MANUFACTURER,
-            ATTR_HW_VERSION,
-            ATTR_MODEL,
-            ATTR_MODEL_ID,
-            ATTR_SERIAL_NUMBER,
-            ATTR_SW_VERSION,
+            CONF_CONFIGURATION_URL,
+            CONF_MANUFACTURER,
+            CONF_HW_VERSION,
+            CONF_MODEL,
+            CONF_MODEL_ID,
+            CONF_SERIAL_NUMBER,
+            CONF_SW_VERSION,
         ]
         for option in options:
             if self.config_entry.data.get(option, None):
