@@ -65,10 +65,12 @@ additional_dependencies = [
   "homeassistant-stubs",
   "iso4217>=1.15",
   "probatio",
+  # Keep before pytest: listing pytest first makes uv pick the newest pytest, which
+  # can pull in a beta Home Assistant instead of the latest stable release.
+  "pytest-homeassistant>=2026.11.0",
   "pytest>=9",
   "pytest-asyncio",
   "pytest-cov",
-  "pytest-homeassistant>=2026.11.0",
   "pytest-timeout",
   "types-PyYAML",
 ]
