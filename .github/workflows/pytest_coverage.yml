@@ -85,7 +85,7 @@ jobs:
           grep -E '^(homeassistant|pytest-homeassistant(-custom-component)?)==' \
             "${RUNNER_TEMP}/ha-min.txt" > "${RUNNER_TEMP}/ha-min-pins.txt"
           cat "${RUNNER_TEMP}/ha-min-pins.txt"
-          uv pip install --no-config --group pytest-base \
+          uv pip install --no-config --python .venv/bin/python --group pytest-base \
             --requirements "${RUNNER_TEMP}/ha-min-pins.txt"
 
       - name: Verify minimum test environment
