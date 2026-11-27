@@ -52,8 +52,11 @@ from .const import (
 )
 from .device import create_device, remove_device
 
+# Home Assistant before 2026.8 lacks this helper; type checking those releases needs the ignore.
 try:
-    from homeassistant.helpers.helper_integration import async_remove_helper_devices
+    from homeassistant.helpers.helper_integration import (  # type: ignore[attr-defined, unused-ignore]
+        async_remove_helper_devices,
+    )
 except ImportError:
     from homeassistant.helpers.device import async_remove_stale_devices_links_keep_current_device
 
