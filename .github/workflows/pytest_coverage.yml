@@ -46,10 +46,10 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up Python 3.14
+      - name: Set up Python 3.14.2 or newer
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
-          python-version: "3.14"
+          python-version: ">=3.14.2 <3.15"
           cache: ${{ matrix.ha-version == 'current' && 'pip' || '' }}
           cache-dependency-path: pyproject.toml
 
@@ -59,6 +59,10 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --group pytest -e . --config-settings editable_mode=compat
 
+      - name: Verify current test environment
+        if: matrix.ha-version == 'current'
+        run: python .github/scripts/minimum_ha_test_env.py verify
+
       - name: Run pytest with coverage
         if: matrix.ha-version == 'current'
         run: python -m pytest
@@ -66,8 +70,6 @@ jobs:
       - name: Set up uv
         if: matrix.ha-version == 'minimum'
         uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
-        with:
-          python-version: "3.14"
 
       - name: Install minimum Home Assistant test environment
         if: matrix.ha-version == 'minimum'
@@ -76,7 +78,7 @@ jobs:
         # group. --no-config skips the project's [tool.uv] settings, which apply to
         # the current environment. This environment is only used for tests.
         run: |
-          uv venv
+          uv venv --python ">=3.14.2,<3.15"
           python3 .github/scripts/minimum_ha_test_env.py requirements > "${RUNNER_TEMP}/ha-min.in"
           uv pip compile --quiet --no-config --python .venv/bin/python --resolution lowest-direct \
             --no-header --output-file "${RUNNER_TEMP}/ha-min.txt" "${RUNNER_TEMP}/ha-min.in"
@@ -85,13 +87,12 @@ jobs:
           cat "${RUNNER_TEMP}/ha-min-pins.txt"
           uv pip install --no-config --group pytest-base \
             --requirements "${RUNNER_TEMP}/ha-min-pins.txt"
-          sed -n 's/^homeassistant==//p' "${RUNNER_TEMP}/ha-min-pins.txt" > "${RUNNER_TEMP}/ha-min-version"
 
-      - name: Verify minimum Home Assistant version
+      - name: Verify minimum test environment
         if: matrix.ha-version == 'minimum'
         run: >-
           .venv/bin/python .github/scripts/minimum_ha_test_env.py verify
-          "$(cat "${RUNNER_TEMP}/ha-min-version")"
+          --pins "${RUNNER_TEMP}/ha-min-pins.txt"
 
       - name: Run pytest on minimum Home Assistant
         if: matrix.ha-version == 'minimum'
