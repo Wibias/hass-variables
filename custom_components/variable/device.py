@@ -4,20 +4,21 @@ import logging
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (
-    ATTR_CONFIGURATION_URL,
-    ATTR_HW_VERSION,
-    ATTR_MANUFACTURER,
-    ATTR_MODEL,
-    ATTR_MODEL_ID,
-    ATTR_SERIAL_NUMBER,
-    ATTR_SW_VERSION,
-    CONF_NAME,
-)
+from homeassistant.const import CONF_NAME
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 
-from .const import CONF_YAML_VARIABLE, DOMAIN
+from .const import (
+    CONF_CONFIGURATION_URL,
+    CONF_HW_VERSION,
+    CONF_MANUFACTURER,
+    CONF_MODEL,
+    CONF_MODEL_ID,
+    CONF_SERIAL_NUMBER,
+    CONF_SW_VERSION,
+    CONF_YAML_VARIABLE,
+    DOMAIN,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -57,14 +58,14 @@ async def create_device(hass: HomeAssistant, entry: ConfigEntry) -> None:
     device = device_registry.async_get_or_create(
         config_entry_id=entry.entry_id,
         identifiers={(DOMAIN, entry.entry_id)},
-        manufacturer=entry.data.get(ATTR_MANUFACTURER),
+        manufacturer=entry.data.get(CONF_MANUFACTURER),
         name=entry.data.get(CONF_NAME),
-        model=entry.data.get(ATTR_MODEL),
-        model_id=entry.data.get(ATTR_MODEL_ID),
-        sw_version=entry.data.get(ATTR_SW_VERSION),
-        hw_version=entry.data.get(ATTR_HW_VERSION),
-        serial_number=entry.data.get(ATTR_SERIAL_NUMBER),
-        configuration_url=entry.data.get(ATTR_CONFIGURATION_URL),
+        model=entry.data.get(CONF_MODEL),
+        model_id=entry.data.get(CONF_MODEL_ID),
+        sw_version=entry.data.get(CONF_SW_VERSION),
+        hw_version=entry.data.get(CONF_HW_VERSION),
+        serial_number=entry.data.get(CONF_SERIAL_NUMBER),
+        configuration_url=entry.data.get(CONF_CONFIGURATION_URL),
     )
     _LOGGER.debug("(%s) [create_device] device id: %s", device.name, device.id)
     device_entities = er.async_entries_for_device(
@@ -120,13 +121,13 @@ async def update_device(
 
     device_registry.async_update_device(
         device_id=device.id,
-        manufacturer=user_input.get(ATTR_MANUFACTURER),
-        model=user_input.get(ATTR_MODEL),
-        model_id=user_input.get(ATTR_MODEL_ID),
-        sw_version=user_input.get(ATTR_SW_VERSION),
-        hw_version=user_input.get(ATTR_HW_VERSION),
-        serial_number=user_input.get(ATTR_SERIAL_NUMBER),
-        configuration_url=user_input.get(ATTR_CONFIGURATION_URL),
+        manufacturer=user_input.get(CONF_MANUFACTURER),
+        model=user_input.get(CONF_MODEL),
+        model_id=user_input.get(CONF_MODEL_ID),
+        sw_version=user_input.get(CONF_SW_VERSION),
+        hw_version=user_input.get(CONF_HW_VERSION),
+        serial_number=user_input.get(CONF_SERIAL_NUMBER),
+        configuration_url=user_input.get(CONF_CONFIGURATION_URL),
     )
     _LOGGER.debug("(%s) [update_device] updated device id: %s", device.name or "", device.id)
     return True
