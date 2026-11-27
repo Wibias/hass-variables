@@ -64,6 +64,7 @@ pass_filenames = false
 additional_dependencies = [
   "homeassistant-stubs",
   "iso4217>=1.15",
+  "probatio",
   "pytest>=9",
   "pytest-asyncio",
   "pytest-cov",

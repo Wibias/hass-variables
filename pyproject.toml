@@ -22,7 +22,7 @@ version = { attr = "custom_components.variable.const.VERSION" }
 
 [dependency-groups]
 ha = ["homeassistant", "iso4217>=1.15"]
-lint = [{ include-group = "ha" }, "mypy", "prek", "ruff", "types-PyYAML"]
+lint = [{ include-group = "ha" }, "mypy", "prek", "probatio", "ruff", "types-PyYAML"]
 pytest = [
     { include-group = "ha" },
     "pytest>=9",
@@ -53,6 +53,8 @@ strict_equality = true
 warn_redundant_casts = true
 warn_unused_ignores = true
 warn_unused_configs = true
+# typings/voluptuous types voluptuous as probatio; see the stub for its limitations.
+mypy_path = "typings"
 
 [[tool.mypy.overrides]]
 module = ["pytest_homeassistant.*"]
@@ -144,6 +146,9 @@ max-complexity = 25
 convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
+"typings/voluptuous/__init__.pyi" = [
+    "F403",   # Re-export probatio as voluptuous for mypy
+]
 "tests/*" = [
     "B017",   # Don't assert blind Exception
     "C90",    # mccabe, complexity
