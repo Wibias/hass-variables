@@ -396,6 +396,20 @@ Note: Manual edits to `.storage` are advanced and should be done carefully with 
 
 </details>
 
+## Development
+
+Tests need Python 3.14.2 or newer. In a virtual environment, install the dependencies and run the tests and checks:
+
+```bash
+python -m pip install --group dev -e . --config-settings editable_mode=compat
+python -m pytest
+prek run --all-files
+```
+
+CI also runs the tests against the minimum supported Home Assistant release declared in `hacs.json`. The `pytest Home Assistant minimum` job in `.github/workflows/pytest_coverage.yml` resolves the oldest release at or above that minimum, together with a test plugin that covers it: `pytest-homeassistant` from Home Assistant 2026.11, otherwise its predecessor `pytest-homeassistant-custom-component`. It installs them with the `pytest-base` dependency group in a separate environment. Raising the minimum in `hacs.json` is all the job needs.
+
+Import Home Assistant test plugin helpers such as `MockConfigEntry` from `tests.common` so the tests work with either plugin, and never install both plugins in one environment. To reproduce the minimum job locally, run its steps from a separate clone with `RUNNER_TEMP` set to a scratch directory. The steps create their own `.venv`, so use a directory that doesn't have one.
+
 ## Attribution
 
 Forked and updated from initial integration developed by [rogro82](https://github.com/rogro82)

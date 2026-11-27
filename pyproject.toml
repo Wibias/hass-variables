@@ -23,13 +23,18 @@ version = { attr = "custom_components.variable.const.VERSION" }
 [dependency-groups]
 ha = ["homeassistant", "iso4217>=1.15"]
 lint = [{ include-group = "ha" }, "mypy", "prek", "probatio", "ruff", "types-PyYAML"]
-pytest = [
+# Test dependencies without the Home Assistant test plugin. The minimum Home
+# Assistant CI job installs this group with the plugin that covers its version.
+pytest-base = [
     { include-group = "ha" },
     "pytest>=9",
     "pytest-asyncio",
     "pytest-cov",
-    "pytest-homeassistant>=2026.11.0",
     "pytest-timeout",
+]
+pytest = [
+    { include-group = "pytest-base" },
+    "pytest-homeassistant>=2026.11.0",
 ]
 dev = [{ include-group = "lint" }, { include-group = "pytest" }]
 
@@ -57,7 +62,7 @@ warn_unused_configs = true
 mypy_path = "typings"
 
 [[tool.mypy.overrides]]
-module = ["pytest_homeassistant.*"]
+module = ["pytest_homeassistant.*", "pytest_homeassistant_custom_component.*"]
 ignore_missing_imports = true
 
 [tool.ruff]

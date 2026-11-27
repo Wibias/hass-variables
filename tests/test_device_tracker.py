@@ -20,7 +20,6 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import device_registry as dr
 import pytest
-from pytest_homeassistant.common import mock_restore_cache
 
 from custom_components.variable.const import (
     ATTR_ATTRIBUTES,
@@ -40,6 +39,7 @@ from custom_components.variable.const import (
 )
 from custom_components.variable.device import _get_device_for_entry
 from custom_components.variable.device_tracker import Variable
+from tests.common import mock_restore_cache
 from tests.types import ConfigEntryFactory
 
 

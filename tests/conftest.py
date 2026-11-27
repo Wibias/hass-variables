@@ -8,7 +8,6 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME, Platform
 from homeassistant.core import HomeAssistant
 import pytest
-from pytest_homeassistant.common import MockConfigEntry
 
 import custom_components
 from custom_components.variable.const import (
@@ -22,6 +21,7 @@ from custom_components.variable.const import (
     CONF_YAML_VARIABLE,
     DOMAIN,
 )
+from tests.common import MockConfigEntry
 from tests.types import ConfigEntryFactory
 
 

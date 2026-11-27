@@ -19,7 +19,6 @@ from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.entity_platform import async_get_platforms
 import pytest
-from pytest_homeassistant.common import mock_restore_cache_with_extra_data
 
 from custom_components.variable.const import (
     ATTR_ATTRIBUTES,
@@ -43,6 +42,7 @@ from custom_components.variable.const import (
 )
 from custom_components.variable.device import _get_device_for_entry
 from custom_components.variable.sensor import Variable
+from tests.common import mock_restore_cache_with_extra_data
 from tests.types import ConfigEntryFactory
 
 NATIVE_UNIT_NONE_WARNING = "native unit of measurement 'None'"
