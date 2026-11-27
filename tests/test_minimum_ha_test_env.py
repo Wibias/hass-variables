@@ -1,6 +1,7 @@
 """Tests for the minimum Home Assistant test environment workflow helper."""
 
 from importlib import util
+from importlib.metadata import PackageNotFoundError
 import json
 from pathlib import Path
 import platform
@@ -173,7 +174,24 @@ def test_verify_rejects_unusable_test_plugins(
         requirements (list[str]): Requirements declared by the installed plugin.
         error (str): Expected failure message.
     """
-    monkeypatch.setattr(SCRIPT, "installed_test_plugins", lambda: plugins)
+
+    def installed_version(name: str) -> str:
+        """Return the version of a simulated installed distribution.
+
+        Args:
+            name (str): Distribution name.
+
+        Returns:
+            str: The simulated installed version.
+
+        Raises:
+            PackageNotFoundError: If the distribution is not installed.
+        """
+        if name not in plugins:
+            raise PackageNotFoundError(name)
+        return plugins[name]
+
+    monkeypatch.setattr(SCRIPT.metadata, "version", installed_version)
     monkeypatch.setattr(SCRIPT.metadata, "requires", lambda _name: requirements)
     hacs_path = _write_hacs(tmp_path, {"homeassistant": "2026.6.0"})
 
