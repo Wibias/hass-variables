@@ -22,16 +22,29 @@ version = { attr = "custom_components.variable.const.VERSION" }
 
 [dependency-groups]
 ha = ["homeassistant", "iso4217>=1.15"]
-lint = [{ include-group = "ha" }, "mypy", "prek", "ruff", "types-PyYAML"]
-pytest = [
+lint = [{ include-group = "ha" }, "mypy", "prek", "probatio", "ruff", "types-PyYAML"]
+# Test dependencies without the Home Assistant test plugin. The minimum Home
+# Assistant CI job installs this group with the plugin that covers its version.
+pytest-base = [
     { include-group = "ha" },
     "pytest>=9",
     "pytest-asyncio",
     "pytest-cov",
-    "pytest-homeassistant-custom-component",
     "pytest-timeout",
 ]
+pytest = [
+    { include-group = "pytest-base" },
+    "pytest-homeassistant>=2026.11.0",
+]
 dev = [{ include-group = "lint" }, { include-group = "pytest" }]
+
+[tool.uv]
+# Home Assistant scans custom_components paths; use real paths for editable installs.
+config-settings = { editable_mode = "compat" }
+
+[tool.uv.dependency-groups]
+pytest = { requires-python = ">=3.14.2" }
+dev = { requires-python = ">=3.14.2" }
 
 [tool.mypy]
 python_version = "3.14"
@@ -45,9 +58,11 @@ strict_equality = true
 warn_redundant_casts = true
 warn_unused_ignores = true
 warn_unused_configs = true
+# typings/voluptuous types voluptuous as probatio; see the stub for its limitations.
+mypy_path = "typings"
 
 [[tool.mypy.overrides]]
-module = ["pytest_homeassistant_custom_component.*"]
+module = ["pytest_homeassistant.*", "pytest_homeassistant_custom_component.*"]
 ignore_missing_imports = true
 
 [tool.ruff]
@@ -136,6 +151,9 @@ max-complexity = 25
 convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
+"typings/voluptuous/__init__.pyi" = [
+    "F403",   # Re-export probatio as voluptuous for mypy
+]
 "tests/*" = [
     "B017",   # Don't assert blind Exception
     "C90",    # mccabe, complexity
@@ -150,7 +168,9 @@ convention = "google"
 ignore-words-list = "hass,ist,THIRDPARTY"
 
 [tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "function"
 addopts = """
+  -p no:respx
   --quiet
   --strict
   --timeout=20

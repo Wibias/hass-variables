@@ -11,46 +11,95 @@ permissions: {}
 
 jobs:
   tests:
-    name: pytest and coverage report
-
-    if: >
-      !(
-        github.event_name == 'pull_request' &&
-        (
-          contains(github.event.pull_request.labels.*.name, 'dependencies') ||
-          github.event.pull_request.user.type == 'Bot'
-        )
-      )
-
+    # The current leg keeps the existing check name.
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
 
     permissions:
       contents: read
       pull-requests: read
+    env:
+      # Keep both check names on skipped pull requests by gating the steps.
+      RUN_TESTS: >-
+        ${{ !(github.event_name == 'pull_request' &&
+          (contains(github.event.pull_request.labels.*.name, 'dependencies') ||
+          github.event.pull_request.user.type == 'Bot')) }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Current Home Assistant with pytest-homeassistant. Posts coverage.
+          - name: pytest and coverage report
+            ha-version: current
+          # Minimum supported Home Assistant, read from hacs.json.
+          - name: pytest Home Assistant minimum
+            ha-version: minimum
 
     steps:
       - name: Checkout Repository
+        if: env.RUN_TESTS == 'true'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      - name: Set up Python 3.14
+      - name: Set up Python 3.14.2 or newer
+        if: env.RUN_TESTS == 'true'
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
-          python-version: "3.14"
-          cache: pip
+          python-version: ">=3.14.2 <3.15"
+          cache: ${{ matrix.ha-version == 'current' && 'pip' || '' }}
           cache-dependency-path: pyproject.toml
 
       - name: Install pytest requirements
+        if: env.RUN_TESTS == 'true' && matrix.ha-version == 'current'
         run: |
           python -m pip install --upgrade pip
-          python -m pip install --group pytest -e .
+          python -m pip install --group pytest -e . --config-settings editable_mode=compat
+
+      - name: Verify current test environment
+        if: env.RUN_TESTS == 'true' && matrix.ha-version == 'current'
+        run: python .github/scripts/minimum_ha_test_env.py verify
 
       - name: Run pytest with coverage
+        if: env.RUN_TESTS == 'true' && matrix.ha-version == 'current'
         run: python -m pytest
 
+      - name: Set up uv
+        if: env.RUN_TESTS == 'true' && matrix.ha-version == 'minimum'
+        uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+
+      - name: Install minimum Home Assistant test environment
+        if: env.RUN_TESTS == 'true' && matrix.ha-version == 'minimum'
+        # Resolve the hacs.json minimum Home Assistant release and the oldest test
+        # plugin release that supports it, then install only those two pins with the
+        # pytest-base group. --no-config skips the project's [tool.uv] settings, which
+        # apply to the current environment. This environment is only used for tests.
+        run: |
+          uv venv --python ">=3.14.2,<3.15"
+          python3 .github/scripts/minimum_ha_test_env.py requirements > "${RUNNER_TEMP}/ha-min.in"
+          uv pip compile --quiet --no-config --python .venv/bin/python --resolution lowest-direct \
+            --no-header --output-file "${RUNNER_TEMP}/ha-min.txt" "${RUNNER_TEMP}/ha-min.in"
+          grep -E '^(homeassistant|pytest-homeassistant(-custom-component)?)==' \
+            "${RUNNER_TEMP}/ha-min.txt" > "${RUNNER_TEMP}/ha-min-pins.txt"
+          cat "${RUNNER_TEMP}/ha-min-pins.txt"
+          uv pip install --no-config --python .venv/bin/python --group pytest-base \
+            --requirements "${RUNNER_TEMP}/ha-min-pins.txt"
+
+      - name: Verify minimum test environment
+        if: env.RUN_TESTS == 'true' && matrix.ha-version == 'minimum'
+        run: >-
+          .venv/bin/python .github/scripts/minimum_ha_test_env.py verify --exact
+          --pins "${RUNNER_TEMP}/ha-min-pins.txt"
+
+      - name: Run pytest on minimum Home Assistant
+        if: env.RUN_TESTS == 'true' && matrix.ha-version == 'minimum'
+        run: .venv/bin/python -m pytest
+
       - name: Generate PR coverage comment
-        if: github.event_name == 'pull_request'
+        if: >-
+          env.RUN_TESTS == 'true' &&
+          matrix.ha-version == 'current' && github.event_name == 'pull_request'
         id: coverage_comment
         uses: py-cov-action/python-coverage-comment-action@7188638f871f721a365d644f505d1ff3df20d683 # v3.40
         with:
@@ -60,6 +109,8 @@ jobs:
 
       - name: Store PR coverage comment
         if: >
+          env.RUN_TESTS == 'true' &&
+          matrix.ha-version == 'current' &&
           github.event_name == 'pull_request' &&
           steps.coverage_comment.outputs.COMMENT_FILE_WRITTEN == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -69,7 +120,9 @@ jobs:
           retention-days: 1
 
       - name: Store coverage database
-        if: github.event_name == 'push'
+        if: >-
+          env.RUN_TESTS == 'true' &&
+          matrix.ha-version == 'current' && github.event_name == 'push'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: coverage-data

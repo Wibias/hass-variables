@@ -13,7 +13,6 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import device_registry as dr
 import pytest
-from pytest_homeassistant_custom_component.common import mock_restore_cache
 
 from custom_components.variable.binary_sensor import Variable
 from custom_components.variable.const import (
@@ -30,6 +29,7 @@ from custom_components.variable.const import (
     SERVICE_UPDATE_BINARY_SENSOR,
 )
 from custom_components.variable.device import _get_device_for_entry
+from tests.common import mock_restore_cache
 from tests.types import ConfigEntryFactory
 
 
