@@ -71,10 +71,10 @@ jobs:
 
       - name: Install minimum Home Assistant test environment
         if: env.RUN_TESTS == 'true' && matrix.ha-version == 'minimum'
-        # Resolve the oldest Home Assistant and test plugin release that satisfy the
-        # hacs.json minimum, then install only those two pins with the pytest-base
-        # group. --no-config skips the project's [tool.uv] settings, which apply to
-        # the current environment. This environment is only used for tests.
+        # Resolve the hacs.json minimum Home Assistant release and the oldest test
+        # plugin release that supports it, then install only those two pins with the
+        # pytest-base group. --no-config skips the project's [tool.uv] settings, which
+        # apply to the current environment. This environment is only used for tests.
         run: |
           uv venv --python ">=3.14.2,<3.15"
           python3 .github/scripts/minimum_ha_test_env.py requirements > "${RUNNER_TEMP}/ha-min.in"
@@ -89,7 +89,7 @@ jobs:
       - name: Verify minimum test environment
         if: env.RUN_TESTS == 'true' && matrix.ha-version == 'minimum'
         run: >-
-          .venv/bin/python .github/scripts/minimum_ha_test_env.py verify
+          .venv/bin/python .github/scripts/minimum_ha_test_env.py verify --exact
           --pins "${RUNNER_TEMP}/ha-min-pins.txt"
 
       - name: Run pytest on minimum Home Assistant

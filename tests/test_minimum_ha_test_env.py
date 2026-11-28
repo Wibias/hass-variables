@@ -60,7 +60,7 @@ def _write_hacs(tmp_path: Path, payload: object) -> Path:
 def test_requirements_select_plugin_for_minimum(
     tmp_path: Path, capsys: pytest.CaptureFixture[str], minimum: str, plugin: str
 ) -> None:
-    """Print the plugin covering the hacs.json minimum and the HA lower bound.
+    """Print the plugin covering the hacs.json minimum and the exact HA pin.
 
     Args:
         tmp_path (Path): Directory for the hacs.json fixture.
@@ -72,7 +72,7 @@ def test_requirements_select_plugin_for_minimum(
 
     SCRIPT.main(["--hacs", str(hacs_path), "requirements"])
 
-    assert capsys.readouterr().out.splitlines() == [plugin, f"homeassistant>={minimum}"]
+    assert capsys.readouterr().out.splitlines() == [plugin, f"homeassistant=={minimum}"]
 
 
 @pytest.mark.parametrize(
@@ -93,20 +93,24 @@ def test_requirements_reject_unusable_minimum(tmp_path: Path, payload: object) -
 
 
 @pytest.mark.parametrize(
-    ("minimum", "pin_changes", "error"),
+    ("minimum", "exact", "pin_changes", "error"),
     [
-        ("2026.6.0", None, None),
-        # Resolved pins that match the installed releases.
-        ("2026.6.0", {}, None),
-        ("2999.1.0", None, "older than the minimum"),
-        ("2026.6.0", {"homeassistant": "2000.1.0"}, "differs from the resolved pins"),
-        ("2026.6.0", {"plugin": "0.0.0"}, "differs from the resolved pins"),
+        # Without --exact, a release newer than the minimum is accepted.
+        ("2000.1.0", False, None, None),
+        # The minimum release itself, with resolved pins that match.
+        (__version__, True, {}, None),
+        ("2000.1.0", True, {}, "differs from the minimum"),
+        ("2999.1.0", False, None, "older than the minimum"),
+        ("2999.1.0", True, {}, "older than the minimum"),
+        (__version__, True, {"homeassistant": "2000.1.0"}, "differs from the resolved pins"),
+        (__version__, True, {"plugin": "0.0.0"}, "differs from the resolved pins"),
     ],
 )
 def test_verify_checks_installed_environment(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
     minimum: str,
+    exact: bool,
     pin_changes: dict[str, str] | None,
     error: str | None,
 ) -> None:
@@ -116,6 +120,7 @@ def test_verify_checks_installed_environment(
         tmp_path (Path): Directory for the hacs.json and pin fixtures.
         capsys (pytest.CaptureFixture[str]): Captures the printed versions.
         minimum (str): Minimum Home Assistant version declared in hacs.json.
+        exact (bool): Whether to require the minimum release itself.
         pin_changes (dict[str, str] | None): Resolved pins that differ from the
             installed releases, or ``None`` to verify without pins.
         error (str | None): Expected failure message, or ``None`` for success.
@@ -123,6 +128,8 @@ def test_verify_checks_installed_environment(
     ((plugin, plugin_version),) = SCRIPT.installed_test_plugins().items()
     hacs_path = _write_hacs(tmp_path, {"homeassistant": minimum})
     args = ["--hacs", str(hacs_path), "verify"]
+    if exact:
+        args.append("--exact")
     if pin_changes is not None:
         pins = {"homeassistant": __version__, plugin: plugin_version}
         pins.update(

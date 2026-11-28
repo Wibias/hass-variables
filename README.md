@@ -406,7 +406,7 @@ python -m pytest
 prek run --all-files
 ```
 
-CI also runs the tests against the minimum supported Home Assistant release declared in `hacs.json`. The `pytest Home Assistant minimum` job in `.github/workflows/pytest_coverage.yml` resolves the oldest release at or above that minimum, together with a test plugin that covers it: `pytest-homeassistant` from Home Assistant 2026.11, otherwise its predecessor `pytest-homeassistant-custom-component`. It installs them with the `pytest-base` dependency group in a separate environment. Raising the minimum in `hacs.json` is all the job needs. Both test jobs require Python 3.14.2 or newer, check that exactly one test plugin is installed and that it matches the installed Home Assistant, and print the versions they use.
+CI also runs the tests against the minimum supported Home Assistant release declared in `hacs.json`. The `pytest Home Assistant minimum` job in `.github/workflows/pytest_coverage.yml` tests exactly that release, together with the oldest test plugin release that supports it: `pytest-homeassistant` from Home Assistant 2026.11, otherwise its predecessor `pytest-homeassistant-custom-component`. It installs them with the `pytest-base` dependency group in a separate environment. Raising the minimum in `hacs.json` is all the job needs; it fails if that release or a matching test plugin cannot be installed. Both test jobs require Python 3.14.2 or newer, check that exactly one test plugin is installed and that it matches the installed Home Assistant, and print the versions they use.
 
 For pull requests from bots or labeled `dependencies`, both check names are reported
 without running tests.

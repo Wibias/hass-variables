@@ -50,7 +50,7 @@ def requirements_for(minimum: str) -> list[str]:
         minimum (str): Minimum Home Assistant version, for example ``2026.6.0``.
 
     Returns:
-        list[str]: The test plugin requirement and the Home Assistant lower bound.
+        list[str]: The test plugin requirement and the exact Home Assistant pin.
 
     Raises:
         ValueError: If the version does not start with a ``YYYY.M`` release.
@@ -64,7 +64,7 @@ def requirements_for(minimum: str) -> list[str]:
         if release >= FIRST_PYTEST_HOMEASSISTANT
         else PREDECESSOR_REQUIREMENT
     )
-    return [plugin, f"homeassistant>={minimum}"]
+    return [plugin, f"homeassistant=={minimum}"]
 
 
 def installed_test_plugins() -> dict[str, str]:
@@ -82,7 +82,7 @@ def installed_test_plugins() -> dict[str, str]:
     return installed
 
 
-def verify_installed(minimum: str, pins_path: Path | None = None) -> str:
+def verify_installed(minimum: str, pins_path: Path | None = None, *, exact: bool = False) -> str:
     """Verify the installed test environment and describe it.
 
     Run this with the test environment's interpreter.
@@ -91,14 +91,17 @@ def verify_installed(minimum: str, pins_path: Path | None = None) -> str:
         minimum (str): Minimum Home Assistant version from ``hacs.json``.
         pins_path (Path | None): File of ``name==version`` lines naming the resolved
             Home Assistant and test plugin releases, if the environment was resolved.
+        exact (bool): Require the minimum Home Assistant release itself instead of
+            accepting a newer one.
 
     Returns:
         str: The Python, Home Assistant and test plugin versions.
 
     Raises:
         SystemExit: If there is not exactly one test plugin, the plugin does not pin
-            the installed Home Assistant, Home Assistant is older than the minimum,
-            or the installed releases differ from the resolved pins.
+            the installed Home Assistant, Home Assistant is older than the minimum
+            or, when ``exact``, differs from it, or the installed releases differ from
+            the resolved pins.
     """
     from homeassistant.const import __version__  # noqa: PLC0415
     from packaging.requirements import Requirement  # noqa: PLC0415
@@ -110,6 +113,8 @@ def verify_installed(minimum: str, pins_path: Path | None = None) -> str:
     ((plugin, plugin_version),) = plugins.items()
     if Version(__version__) < Version(minimum):
         raise SystemExit(f"Home Assistant {__version__} is older than the minimum {minimum}")
+    if exact and Version(__version__) != Version(minimum):
+        raise SystemExit(f"Home Assistant {__version__} differs from the minimum {minimum}")
     requirements = [Requirement(line) for line in metadata.requires(plugin) or []]
     if not any(
         requirement.name == "homeassistant" and str(requirement.specifier) == f"=={__version__}"
@@ -144,13 +149,16 @@ def main(argv: Sequence[str] | None = None) -> None:
     commands.add_parser("requirements", help="Print lowest-version resolver input.")
     verify = commands.add_parser("verify", help="Check the installed test environment.")
     verify.add_argument("--pins", type=Path, help="Resolved name==version lines to match.")
+    verify.add_argument(
+        "--exact", action="store_true", help="Require the minimum Home Assistant release itself."
+    )
     args = parser.parse_args(argv)
 
     minimum = read_minimum_version(args.hacs)
     if args.command == "requirements":
         sys.stdout.write("\n".join(requirements_for(minimum)) + "\n")
     else:
-        sys.stdout.write(verify_installed(minimum, args.pins) + "\n")
+        sys.stdout.write(verify_installed(minimum, args.pins, exact=args.exact) + "\n")
 
 
 if __name__ == "__main__":
